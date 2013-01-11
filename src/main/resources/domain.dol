@@ -1,0 +1,303 @@
+/*******************************************************************************
+ * Copyright 2012-2013 Trento RISE
+ * 
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ * 
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ ******************************************************************************/
+package smartcampus.services.journeyplanner;
+
+import it.sayservice.platform.compiler.domain.model.annotations.ServiceNotification;
+import it.sayservice.platform.compiler.domain.model.annotations.Service;
+import it.sayservice.platform.compiler.domain.model.annotations.Subscription;
+import it.sayservice.platform.compiler.domain.model.annotations.Local;
+import it.sayservice.platform.compiler.domain.model.annotations.Process;
+
+import it.sayservice.platform.smartplanner.data.message.Itinerary;
+import it.sayservice.platform.smartplanner.data.message.Position;
+import it.sayservice.platform.smartplanner.data.message.journey.RecurrentJourney;
+import it.sayservice.platform.smartplanner.data.message.journey.JourneyPlannerUserProfile;
+
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertAccident;
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertDelay;
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertParking;
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertStrike;
+
+import smartcampus.services.journeyplanner.helpers.AlertFilter;
+import smartcampus.services.journeyplanner.helpers.DelayChecker;
+import smartcampus.services.journeyplanner.helpers.AlertUpdater;
+
+import smartcampus.service.trentomale.data.message.Trentomale;
+import smartcampus.services.trentomale.TrentoMaleTrain;
+import smartcampus.services.trentomale.TrainsAlertsSent;
+
+
+// SINGLE
+
+DomainObject ItineraryFactory {
+
+    @Local(actionName="saveItinerary")
+    operation saveItinerary(itinerary:Itinerary,clientId:String,userId:String,originalFrom:Position,originalTo:Position,name:String);
+    
+   action saveItinerary(itinerary:Itinerary,clientId:String,userId:String,originalFrom:Position,originalTo:Position,name:String) {
+		create ItineraryObject(data:itinerary,clientId:clientId,userId:userId,originalFrom:originalFrom,originalTo:originalTo,name:name);
+	}
+	
+}
+
+DomainType ItineraryObject {
+
+    port alertDelay(alert: AlertDelay, userId : String, clientId : String, title: String);
+    port alertStrike(alert: AlertStrike, userId : String, clientId : String, title: String);  
+	port alertParking(alert: AlertParking, userId : String, clientId : String, title: String);
+//	port alertAccident(alert: AlertAccident, userId : String, clientId : String, title: String);  
+
+	public immutable var userId : String;
+	public immutable var clientId : String;
+	public var data: Itinerary;
+	public immutable var originalFrom: Position;
+	public immutable var originalTo: Position;
+	public immutable var name : String;
+	
+	public var monitor: boolean = true; 
+
+    @Local(actionName="deleteItinerary")
+    operation deleteItinerary();
+    
+    @Local(actionName="setMonitorFlag")
+    operation setMonitorFlag(flag:boolean);    
+    
+    action deleteItinerary() => terminate;
+    
+    action setMonitorFlag(flag:boolean) {
+    	set monitor = flag;
+    }
+    
+    action checkDelay(alert:AlertDelay) {
+		if (AlertFilter.filterDelay(data, alert)) {
+			set data = AlertUpdater.updateAlerts(data,alert);
+			publish alertDelay(alert, userId, clientId, name);
+		}
+    }
+    
+   action checkStrike(alert:AlertStrike) {
+		if (AlertFilter.filterStrike(data, alert)) {
+			set data = AlertUpdater.updateAlerts(data,alert);
+			publish alertStrike(alert, userId, clientId, name);
+		} 
+    }    
+    
+   action checkParking(alert:AlertParking) {
+		if (AlertFilter.filterParking(data, alert)) {
+			set data = AlertUpdater.updateAlerts(data,alert);
+			publish alertParking(alert, userId, clientId, name);		
+		} 
+    }      
+    
+	subscribe AlertFactory!alertDelay() if (monitor) => checkDelay(alert);
+	subscribe AlertFactory!alertStrike() if (monitor) => checkStrike(alert);
+	subscribe AlertFactory!alertParking() if (monitor) => checkParking(alert);
+	
+	subscribe TrainsAlertsSender!alertDelay() if (monitor) => checkDelay(alert);
+    
+}
+
+// RECURRENT
+
+DomainObject RecurrentJourneyFactory {
+
+    @Local(actionName="saveRecurrentJourney")
+    operation saveRecurrentJourney(recurrentJourney:RecurrentJourney,clientId:String,userId:String,name:String,monitor:boolean);
+    
+   action saveRecurrentJourney(recurrentJourney:RecurrentJourney,clientId:String,userId:String,name:String,monitor:boolean) {
+		create RecurrentJourneyObject(data:recurrentJourney,clientId:clientId,userId:userId,name:name,monitor:monitor);
+	}
+}	
+
+DomainType RecurrentJourneyObject {
+
+    port alertDelay(alert: AlertDelay, userId : String, clientId: String, title: String);
+    port alertStrike(alert: AlertStrike, userId : String, clientId: String, title: String);  
+	port alertParking(alert: AlertParking, userId : String, clientId: String, title: String);
+//	port alertAccident(alert: AlertAccident, userId : String, clientId: String, title: String);  
+
+	public immutable var userId : String;
+	public immutable var clientId : String;
+	public var name : String;
+	public var data: RecurrentJourney; 
+	
+	public var monitor: boolean; 
+	
+	@Local(actionName="updateRecurrentJourney")
+    operation updateRecurrentJourney(newJourney:RecurrentJourney,newName:String,newMonitor:boolean);	
+	
+    @Local(actionName="deleteRecurrentJourney")
+    operation deleteRecurrentJourney();
+    
+    @Local(actionName="setMonitorFlag")
+    operation setMonitorFlag(flag:boolean);    
+
+    action updateRecurrentJourney(newJourney:RecurrentJourney, newName:String, newMonitor:boolean) {
+    	set data = newJourney;
+    	set name = newName;
+    	set monitor = newMonitor;
+    }
+    
+    action deleteRecurrentJourney() => terminate;
+    
+    action setMonitorFlag(flag:boolean) {
+    	set monitor = flag;
+    }
+    
+    action checkDelay(alert:AlertDelay) {
+		if (AlertFilter.filterDelay(data, alert)) { 
+			publish alertDelay(alert, userId, clientId, name);
+		}
+    }
+    
+   action checkStrike(alert:AlertStrike) {
+		if (AlertFilter.filterStrike(data, alert)) {
+			publish alertStrike(alert, userId, clientId, name);
+		} 
+    }    
+    
+   action checkParking(alert:AlertParking) {
+		if (AlertFilter.filterParking(data, alert)) {
+			publish alertParking(alert, userId, clientId, name);		
+		} 
+    }      
+    
+	subscribe AlertFactory!alertDelay() if (monitor) => checkDelay(alert);
+	subscribe AlertFactory!alertStrike() if (monitor) => checkStrike(alert);
+	subscribe AlertFactory!alertParking() if (monitor) => checkParking(alert);
+    
+    subscribe TrainsAlertsSender!alertDelay() if (monitor) => checkDelay(alert);
+    
+    }
+
+// ALERTS
+
+DomainObject AlertFactory {
+
+    port alertDelay(alert: AlertDelay);
+    port alertStrike(alert: AlertStrike);    
+	port alertParking(alert: AlertParking);
+//	port alertAccident(alert: AlertAccident);   	
+
+   @Local(actionName="submitAlertAccident")
+    operation submitAlertAccident(newAlert:AlertAccident);    
+    
+   @Local(actionName="submitAlertDelay")
+    operation submitAlertDelay(newAlert:AlertDelay);
+    
+   @Local(actionName="submitAlertParking")
+    operation submitAlertParking(newAlert:AlertParking); 
+    
+    @Local(actionName="submitAlertStrike")
+    operation submitAlertStrike(newAlert:AlertStrike);     
+
+	action submitAlertAccident(newAlert:AlertAccident) {
+	}	
+
+	action submitAlertDelay(newAlert:AlertDelay) {
+		publish alertDelay(newAlert);
+	}
+	
+	action submitAlertParking(newAlert:AlertParking) {
+		publish alertParking(newAlert);
+	}		
+	
+	action submitAlertStrike(newAlert:AlertStrike) {
+		publish alertStrike(newAlert);
+	}			
+
+}
+
+// USER PROFILE
+
+DomainObject UserProfileFactory {
+
+    @Local(actionName="createUserProfile")
+    operation createUserProfile(userProfile:JourneyPlannerUserProfile, clientId:String, newUserId:String);
+    
+   action createUserProfile(userProfile:JourneyPlannerUserProfile,clientId:String, newUserId:String) {
+   	    user : UserProfileObject[] = query UserProfileObject(userId == newUserId);
+        if (user == null || count(user) == 0) {
+   			create UserProfileObject(data:userProfile, clientId: clientId, userId:newUserId);
+   		}
+	}
+}	
+
+
+DomainType UserProfileObject {
+
+	public immutable var userId : String;
+	public immutable var clientId : String;
+	
+	public var data : JourneyPlannerUserProfile;
+	
+	@Local(actionName="updateUserProfile")
+    operation updateUserProfile(newProfile:JourneyPlannerUserProfile);
+    
+    @Local(actionName="deleteUserProfile")
+    operation deleteUserProfile();
+    
+    action updateUserProfile(newProfile:JourneyPlannerUserProfile) {
+    	set data = newProfile;
+    }
+    
+    action deleteUserProfile() => terminate;
+	
+}
+
+// SERVICES
+
+DomainObject GetTrains {
+
+
+    @ServiceNotification(serviceId="smartcampus.service.TrentoMale", methodName="TrainsTrentoMale", converter="smartcampus.services.trentomale.TrentoMaleConverter")
+    port update(data : TrentoMaleTrain[]);
+
+    @Subscription(serviceId="smartcampus.service.TrentoMale", methodName="TrainsTrentoMale")
+    operation subscribeTrentoMale();
+    
+    action initialize() {
+        invoke subscribeTrentoMale();     
+	}
+
+}
+
+DomainObject TrainsAlertsSender {
+
+    port alertDelay(alert: AlertDelay);
+    
+    public var sent : TrainsAlertsSent;
+
+	action sendAlerts(list : TrentoMaleTrain[]) {
+	        for (t in list) {
+	        	delay : AlertDelay = DelayChecker.checkDelay(t);
+	        	if (delay != null) {
+	        		newSent : TrainsAlertsSent = DelayChecker.checkNewAlerts(sent,t);
+	        		if (newSent != null) {
+	        			set sent = newSent;
+						publish alertDelay(delay);
+					}
+	        	}
+	        }
+	       set sent = DelayChecker.cleanOldAlerts(sent);
+	}
+	
+	action initialize() {
+		set sent = TrainsAlertsSent.getInstance();
+	}
+
+   subscribe GetTrains!update() => sendAlerts(data);
+}
