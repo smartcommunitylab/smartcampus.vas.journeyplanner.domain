@@ -73,12 +73,13 @@ DomainType ItineraryObject {
     operation deleteItinerary();
     
     @Local(actionName="setMonitorFlag")
-    operation setMonitorFlag(flag:boolean);    
+    operation setMonitorFlag(flag:boolean) returns boolean;    
     
     action deleteItinerary() => terminate;
     
-    action setMonitorFlag(flag:boolean) {
+    action setMonitorFlag(flag:boolean) returns boolean {
     	set monitor = flag;
+    	return flag;
     }
     
     action checkDelay(alert:AlertDelay) {
@@ -143,7 +144,7 @@ DomainType RecurrentJourneyObject {
     operation deleteRecurrentJourney();
     
     @Local(actionName="setMonitorFlag")
-    operation setMonitorFlag(flag:boolean);    
+    operation setMonitorFlag(flag:boolean) returns boolean;    
 
     action updateRecurrentJourney(newJourney:RecurrentJourney, newName:String, newMonitor:boolean) {
     	set data = newJourney;
@@ -153,8 +154,9 @@ DomainType RecurrentJourneyObject {
     
     action deleteRecurrentJourney() => terminate;
     
-    action setMonitorFlag(flag:boolean) {
+    action setMonitorFlag(flag:boolean) returns boolean {
     	set monitor = flag;
+    	return flag;
     }
     
     action checkDelay(alert:AlertDelay) {
