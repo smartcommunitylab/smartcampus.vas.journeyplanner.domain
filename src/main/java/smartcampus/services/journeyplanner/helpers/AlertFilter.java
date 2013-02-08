@@ -17,6 +17,7 @@ package smartcampus.services.journeyplanner.helpers;
 
 import it.sayservice.platform.smartplanner.data.message.Itinerary;
 import it.sayservice.platform.smartplanner.data.message.Leg;
+import it.sayservice.platform.smartplanner.data.message.SimpleLeg;
 import it.sayservice.platform.smartplanner.data.message.StopId;
 import it.sayservice.platform.smartplanner.data.message.Transport;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertDelay;
@@ -24,6 +25,8 @@ import it.sayservice.platform.smartplanner.data.message.alerts.AlertParking;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertStrike;
 import it.sayservice.platform.smartplanner.data.message.journey.RecurrentJourney;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class AlertFilter {
@@ -41,15 +44,15 @@ public class AlertFilter {
 	}		
 	
 	public static boolean filterDelay(RecurrentJourney journey, AlertDelay alert) {
-		return filterDelay(journey.getLegs(), alert);
+		return filterRecurrentDelay(journey, alert);
 	}
 	
 	public static boolean filterStrike(RecurrentJourney journey, AlertStrike alert) {
-		return filterStrike(journey.getLegs(), alert);
+		return filterRecurrentStrike(journey, alert);
 	}	
 	
 	public static boolean filterParking(RecurrentJourney journey, AlertParking alert) {
-		return filterParking(journey.getLegs(), alert);
+		return filterRecurrentParking(journey, alert);
 	}			
 	
 	
@@ -62,6 +65,24 @@ public class AlertFilter {
 		return false;
 	}
 	
+	private static boolean filterRecurrentDelay(RecurrentJourney journey, AlertDelay alert) {
+		String transportId = alert.getTransport().getAgencyId() + "_" + alert.getTransport().getRouteId();
+		if (!journey.getMonitorLegs().containsKey(transportId) || journey.getMonitorLegs().get(transportId) == false) {
+			return false;
+		}
+		
+		for (SimpleLeg leg: journey.getLegs()) {
+			if (areEqual(leg.getTransport(),alert.getTransport(), true, true, true, true)) {
+				Calendar cal = new GregorianCalendar();
+				cal.setTimeInMillis(System.currentTimeMillis());
+				if (journey.getParameters().getRecurrence().contains(cal.get(Calendar.DAY_OF_WEEK))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}		
+	
 	private static boolean filterStrike(List<Leg> legs, AlertStrike alert) {
 		for (Leg leg: legs) {
 			if (areEqual(leg.getTransport(),alert.getTransport(), true, false, false, true)) {
@@ -70,6 +91,12 @@ public class AlertFilter {
 		}
 		return false;
 	}	
+	
+	private static boolean filterRecurrentStrike(RecurrentJourney journey, AlertStrike alert) {
+		// TBD
+		return false;
+	}
+	
 	
 	private static boolean filterParking(List<Leg> legs, AlertParking alert) {
 		for (Leg leg: legs) {
@@ -90,6 +117,11 @@ public class AlertFilter {
 		}
 		return false;
 	}			
+	
+	private static boolean filterRecurrentParking(RecurrentJourney journey, AlertParking alert) {
+		// TBD
+		return false;
+	}	
 	
 	private static boolean areEqual(Transport t1, Transport t2, boolean agency, boolean route, boolean trip, boolean type) {
 		boolean result = true;
