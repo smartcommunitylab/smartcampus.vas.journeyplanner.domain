@@ -20,12 +20,12 @@ import it.sayservice.platform.smartplanner.data.message.Position;
 
 public class TrentoMaleTrain {
 
-//	private String station;
 	private long id;
 	private long number;
-//	private String time;
-//	private String direction;
+	private String time;
+	private String direction;
 	private long delay;
+	private String station;
 	
 	private Position from;
 
@@ -60,7 +60,47 @@ public class TrentoMaleTrain {
 	public void setFrom(Position from) {
 		this.from = from;
 	}
-	
-	
+
+	/**
+	 * @return the time
+	 */
+	public String getTime() {
+		return time;
+	}
+
+	/**
+	 * @param time the time to set
+	 */
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	/**
+	 * @return the direction
+	 */
+	public String getDirection() {
+		return direction;
+	}
+
+	/**
+	 * @param direction the direction to set
+	 */
+	public void setDirection(String direction) {
+		this.direction = direction;
+	}
+
+	/**
+	 * @return the station
+	 */
+	public String getStation() {
+		return station;
+	}
+
+	/**
+	 * @param station the station to set
+	 */
+	public void setStation(String station) {
+		this.station = station;
+	}
 	
 }

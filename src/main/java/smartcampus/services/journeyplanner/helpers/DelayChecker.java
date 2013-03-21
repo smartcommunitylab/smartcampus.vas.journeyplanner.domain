@@ -15,20 +15,29 @@
  ******************************************************************************/
 package smartcampus.services.journeyplanner.helpers;
 
+import it.sayservice.platform.smartplanner.data.message.Position;
 import it.sayservice.platform.smartplanner.data.message.TType;
 import it.sayservice.platform.smartplanner.data.message.Transport;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertDelay;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertType;
 import it.sayservice.platform.smartplanner.data.message.alerts.CreatorType;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TreeMap;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import smartcampus.services.trentomale.TrainsAlertsSent;
 import smartcampus.services.trentomale.TrentoMaleTrain;
 
 public class DelayChecker {
+	
+	private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
+	
+	private static Log logger = LogFactory.getLog(DelayChecker.class);
 	
 	// TODO: maybe change agencyId, routeId...
 	public static AlertDelay checkDelay(TrentoMaleTrain train) {
@@ -46,29 +55,39 @@ public class DelayChecker {
 			t.setTripId("" + train.getNumber());
 			t.setType(TType.TRAIN);
 			delay.setTransport(t);
-			
 			delay.setType(AlertType.DELAY);
 			
 			Calendar cal = new GregorianCalendar();
-			
+			Calendar parsed = new GregorianCalendar();
+			try {
+				parsed.setTime(TIME_FORMAT.parse(train.getTime()));
+				cal.set(Calendar.HOUR_OF_DAY, parsed.get(Calendar.HOUR_OF_DAY));
+				cal.set(Calendar.MINUTE, parsed.get(Calendar.MINUTE));
+			} catch (Exception e) {
+				logger.error("Error parsing delay time: "+e.getMessage());
+				cal.set(Calendar.MINUTE, 0);
+				cal.set(Calendar.HOUR_OF_DAY, 4);
+			}
 			cal.set(Calendar.MILLISECOND, 0);
-			
-			cal.set(Calendar.MINUTE, 0);
 			cal.set(Calendar.SECOND, 0);
 			
-			cal.set(Calendar.HOUR_OF_DAY, 4);
 			long from = cal.getTimeInMillis();
 			cal.set(Calendar.HOUR_OF_DAY, 23);
 			cal.set(Calendar.MINUTE, 59);
 			long to = cal.getTimeInMillis();
 			delay.setFrom(from);
 			delay.setTo(to);
+			Position p = new Position();
+			p.setName(train.getStation());
+			delay.setPosition(p);
 			
-			if (train.getDelay() > 0) {
-				delay.setNote("Train " + train.getNumber() + " has a delay of " + train.getDelay() + " minutes.");
-			} else {
-				delay.setNote("Train " + train.getNumber() + " is on time.");
-			}
+//			if (train.getDelay() > 0) {
+//				delay.setNote("Train " + train.getNumber() + " has a delay of " + train.getDelay() + " minutes.");
+//			} else {
+//				delay.setNote("Train " + train.getNumber() + " is on time.");
+//			}
+			// USE NOTE AS DIRECTION
+			delay.setNote(train.getDirection());
 			
 			delay.setId(delay.getTransport().getTripId() + "_" + delay.getFrom() + "_" + delay.getTo());
 			

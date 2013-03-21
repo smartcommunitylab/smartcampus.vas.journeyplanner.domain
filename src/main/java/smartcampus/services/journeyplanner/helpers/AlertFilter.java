@@ -61,15 +61,19 @@ public class AlertFilter {
 
 	private static boolean filterDelay(List<Leg> legs, AlertDelay alert) {
 		try {
-		for (Leg leg : legs) {
-			if (areEqual(leg.getTransport(), alert.getTransport(), true, true, true, true)) {
-				return true;
+			Calendar ac = Calendar.getInstance();
+			ac.setTimeInMillis(alert.getFrom());
+			for (Leg leg : legs) {
+				if (areEqual(leg.getTransport(), alert.getTransport(), true, true, true, true)) {
+					Calendar c = Calendar.getInstance();
+					c.setTimeInMillis(leg.getStartime());
+					return c.get(Calendar.YEAR) == ac.get(Calendar.YEAR) && c.get(Calendar.DAY_OF_YEAR) == ac.get(Calendar.DAY_OF_YEAR);
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("Cannot filter delay");		
 		}
-	} catch (Exception e) {
-		e.printStackTrace();
-		log.error("Cannot filter delay");		
-	}
 		return false;
 	}
 

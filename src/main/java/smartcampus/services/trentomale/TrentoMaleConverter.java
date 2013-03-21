@@ -51,7 +51,9 @@ public class TrentoMaleConverter implements DataConverter{
 					tmt.setDelay(t.getDelay());
 					tmt.setId(t.getId());
 					tmt.setNumber(t.getNumber());
-					
+					tmt.setDirection(t.getDirection());
+					tmt.setTime(t.getTime());
+					tmt.setStation(t.getStation());
 					list.add(tmt);
 			} catch (Exception e) {
 				e.printStackTrace();
