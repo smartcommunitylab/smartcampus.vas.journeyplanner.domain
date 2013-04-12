@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import smartcampus.service.trentomale.data.message.Trentomale.Train;
+import smartcampus.services.oraritreni.delays.GenericTrain;
 
 import com.google.protobuf.ByteString;
 
@@ -43,23 +44,29 @@ public class TrentoMaleConverter implements DataConverter{
 	public Object fromMessage(Serializable object) {
 		List<ByteString> data = (List<ByteString>)object;
 		Tuple res = new Tuple();
-		List<TrentoMaleTrain> list = new ArrayList<TrentoMaleTrain>();
+		List<GenericTrain> list = new ArrayList<GenericTrain>();
 		for (ByteString bs : data) {
 			try {
 				Train t = Train.parseFrom(bs);
-					TrentoMaleTrain tmt = new TrentoMaleTrain();
+				GenericTrain tmt = new GenericTrain();
 					tmt.setDelay(t.getDelay());
-					tmt.setId(t.getId());
-					tmt.setNumber(t.getNumber());
+					tmt.setId("" + t.getId());
+					tmt.setTripId("" + t.getNumber());
 					tmt.setDirection(t.getDirection());
 					tmt.setTime(t.getTime());
 					tmt.setStation(t.getStation());
+					tmt.setAgencyId("10");
+					if ("Trento".equalsIgnoreCase(t.getDirection())) {
+						tmt.setRouteId("556");
+					} else {
+						tmt.setRouteId("555");
+					}
 					list.add(tmt);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		res.put("data", list.toArray(new TrentoMaleTrain[list.size()]));
+		res.put("data", list.toArray(new GenericTrain[list.size()]));
 		return res;
 	}
 

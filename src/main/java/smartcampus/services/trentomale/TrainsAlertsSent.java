@@ -20,21 +20,21 @@ import java.util.TreeMap;
 
 public class TrainsAlertsSent {
 
-	private Map<Long, String> alerts;
+	private Map<String, String> alerts;
 	
 	public static TrainsAlertsSent getInstance() {
 		return new TrainsAlertsSent();
 	}
 	
 	public TrainsAlertsSent() {
-		alerts = new TreeMap<Long, String>();
+		alerts = new TreeMap<String, String>();
 	}
 	
-	public Map<Long, String> getAlerts() {
+	public Map<String, String> getAlerts() {
 		return alerts;
 	}
 
-	public void setAlerts(Map<Long, String> alerts) {
+	public void setAlerts(Map<String, String> alerts) {
 		this.alerts = alerts;
 	}
 	

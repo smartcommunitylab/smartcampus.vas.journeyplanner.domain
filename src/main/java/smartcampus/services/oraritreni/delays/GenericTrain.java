@@ -1,5 +1,8 @@
 /*******************************************************************************
- * Copyright 2012-2013 Trento RISE
+
+	public long getDelay() {
+		return delay;
+	} * Copyright 2012-2013 Trento RISE
  * 
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,42 +16,37 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  ******************************************************************************/
-package smartcampus.services.trentomale;
+package smartcampus.services.oraritreni.delays;
 
 import it.sayservice.platform.smartplanner.data.message.Position;
 
 
-public class TrentoMaleTrain {
+public class GenericTrain {
 
-	private long id;
-	private long number;
+	private String id;
 	private String time;
 	private String direction;
 	private long delay;
 	private String station;
 	
 	private Position from;
+	
+	private String agencyId;
+	private String routeId;
+	private String tripId;
 
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
-	}
-
-	public long getNumber() {
-		return number;
-	}
-
-	public void setNumber(long number) {
-		this.number = number;
 	}
 
 	public long getDelay() {
 		return delay;
 	}
-
+	
 	public void setDelay(long delay) {
 		this.delay = delay;
 	}
@@ -101,6 +99,35 @@ public class TrentoMaleTrain {
 	 */
 	public void setStation(String station) {
 		this.station = station;
+	}
+
+	public String getAgencyId() {
+		return agencyId;
+	}
+
+	public void setAgencyId(String agencyId) {
+		this.agencyId = agencyId;
+	}
+
+	public String getRouteId() {
+		return routeId;
+	}
+
+	public void setRouteId(String routeId) {
+		this.routeId = routeId;
+	}
+
+	public String getTripId() {
+		return tripId;
+	}
+
+	public void setTripId(String tripId) {
+		this.tripId = tripId;
+	}
+	
+	@Override
+	public String toString() {
+		return agencyId + "," + routeId + "," + tripId;
 	}
 	
 }

@@ -35,6 +35,8 @@ import smartcampus.services.journeyplanner.helpers.AlertFilter;
 import smartcampus.services.journeyplanner.helpers.DelayChecker;
 import smartcampus.services.journeyplanner.helpers.AlertUpdater;
 
+import smartcampus.services.oraritreni.delays.GenericTrain;
+
 import smartcampus.service.trentomale.data.message.Trentomale;
 import smartcampus.services.trentomale.TrentoMaleTrain;
 import smartcampus.services.trentomale.TrainsAlertsSent;
@@ -266,13 +268,21 @@ DomainObject GetTrains {
 
 
     @ServiceNotification(serviceId="smartcampus.service.TrentoMale", methodName="TrainsTrentoMale", converter="smartcampus.services.trentomale.TrentoMaleConverter")
-    port update(data : TrentoMaleTrain[]);
+    port updateTrentoMale(data : GenericTrain[]);
+
+    @ServiceNotification(serviceId="smartcampus.service.oraritreni", methodName="GetOrariTreni", converter="smartcampus.services.oraritreni.OrariTreniConverter")
+    port updateOrariTreni(data : GenericTrain[]);  
 
     @Subscription(serviceId="smartcampus.service.TrentoMale", methodName="TrainsTrentoMale")
     operation subscribeTrentoMale();
     
+    @Subscription(serviceId="smartcampus.service.oraritreni", methodName="GetOrariTreni")
+    operation subscribeTrenitalia(stazione:String);    
+    
     action initialize() {
-        invoke subscribeTrentoMale();     
+        invoke subscribeTrentoMale();    
+        invoke subscribeTrenitalia("trento");
+        invoke subscribeTrenitalia("bassano del grappa");
 	}
 
 }
@@ -283,7 +293,7 @@ DomainObject TrainsAlertsSender {
     
     public var sent : TrainsAlertsSent;
 
-	action sendAlerts(list : TrentoMaleTrain[]) {
+	action sendAlerts(list : GenericTrain[]) {
 	        for (t in list) {
 	        	delay : AlertDelay = DelayChecker.checkDelay(t);
 	        	if (delay != null) {
@@ -301,5 +311,6 @@ DomainObject TrainsAlertsSender {
 		set sent = TrainsAlertsSent.getInstance();
 	}
 
-   subscribe GetTrains!update() => sendAlerts(data);
+   subscribe GetTrains!updateTrentoMale() => sendAlerts(data);
+   subscribe GetTrains!updateOrariTreni() => sendAlerts(data);
 }
