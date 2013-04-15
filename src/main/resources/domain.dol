@@ -38,7 +38,6 @@ import smartcampus.services.journeyplanner.helpers.AlertUpdater;
 import smartcampus.services.oraritreni.delays.GenericTrain;
 
 import smartcampus.service.trentomale.data.message.Trentomale;
-import smartcampus.services.trentomale.TrentoMaleTrain;
 import smartcampus.services.trentomale.TrainsAlertsSent;
 
 
