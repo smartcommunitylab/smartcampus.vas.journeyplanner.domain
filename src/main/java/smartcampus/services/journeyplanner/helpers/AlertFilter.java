@@ -64,7 +64,7 @@ public class AlertFilter {
 			Calendar ac = Calendar.getInstance();
 			ac.setTimeInMillis(alert.getFrom());
 			for (Leg leg : legs) {
-				if (areEqual(leg.getTransport(), alert.getTransport(), true, true, true, true)) {
+				if (areEqual(leg.getTransport(), alert.getTransport(), true, false, true, true)) {
 					Calendar c = Calendar.getInstance();
 					c.setTimeInMillis(leg.getStartime());
 					return c.get(Calendar.YEAR) == ac.get(Calendar.YEAR) && c.get(Calendar.DAY_OF_YEAR) == ac.get(Calendar.DAY_OF_YEAR);
@@ -85,7 +85,7 @@ public class AlertFilter {
 			}
 
 			for (SimpleLeg leg : journey.getLegs()) {
-				if (areEqual(leg.getTransport(), alert.getTransport(), true, true, true, true)) {
+				if (areEqual(leg.getTransport(), alert.getTransport(), true, false, true, true)) {
 					Calendar cal = new GregorianCalendar();
 					cal.setTimeInMillis(System.currentTimeMillis());
 					if (journey.getParameters().getRecurrence().contains(cal.get(Calendar.DAY_OF_WEEK))) {
