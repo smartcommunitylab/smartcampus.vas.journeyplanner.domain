@@ -128,13 +128,14 @@ public class DelayChecker {
 		newSent.setAlerts(sent.getAlerts());
 
 		String delay = buildDate() + "_" + train.getDelay();
+		String old = sent.getAlerts().get(train.getTripId());
 		
-		if (!sent.getAlerts().containsKey(train.getTripId())) {
+		if (old == null && train.getDelay() > 0) {
 			newSent.getAlerts().put(train.getTripId(), delay);
 			return newSent;
 		}
-
-		if (sent.getAlerts().get(train.getTripId()).equals(delay)) {
+		
+		if (old ==null || old.equals(delay)) {
 			return null;
 		}
 
