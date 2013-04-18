@@ -33,12 +33,20 @@ import it.sayservice.platform.smartplanner.data.message.alerts.AlertStrike;
 
 import smartcampus.services.journeyplanner.helpers.AlertFilter;
 import smartcampus.services.journeyplanner.helpers.DelayChecker;
+import smartcampus.services.journeyplanner.helpers.ParkingChecker;
 import smartcampus.services.journeyplanner.helpers.AlertUpdater;
 
 import smartcampus.services.oraritreni.delays.GenericTrain;
 
 import smartcampus.service.trentomale.data.message.Trentomale;
 import smartcampus.services.trentomale.TrainsAlertsSent;
+
+import eu.trentorise.smartcampus.service.parcheggi.data.message.Parcheggi.Parcheggio;
+
+import smartcampus.services.parkings.Parking;
+import smartcampus.services.parkings.ParkingsAlertsSent;
+
+
 
 
 // SINGLE
@@ -313,3 +321,51 @@ DomainObject TrainsAlertsSender {
    subscribe GetTrains!updateTrentoMale() => sendAlerts(data);
    subscribe GetTrains!updateOrariTreni() => sendAlerts(data);
 }
+
+
+
+DomainObject GetParking {
+
+
+    @ServiceNotification(serviceId="smartcampus.service.parcheggi", methodName="GetParcheggiTrento", converter="smartcampus.services.parkings.ParcheggiTrentoConverter")
+    port updateParcheggiTrento(data : Parking[]);
+
+    @Subscription(serviceId="smartcampus.service.parcheggi", methodName="GetParcheggiTrento")
+    operation subscribeParcheggiTrento();
+    
+    action initialize() {
+        invoke subscribeParcheggiTrento();    
+	}
+
+}
+
+DomainObject ParkingAlertsSender {
+
+    port alertParking(alert: AlertParking);
+    
+    public var sent : ParkingsAlertsSent;
+
+	action sendAlerts(list : Parking[]) {
+	        for (t in list) {
+	        	parking : AlertParking = ParkingChecker.checkParking(t);
+	        	if (parking != null) {
+	        		newSent : ParkingsAlertsSent = ParkingChecker.checkNewAlerts(sent,t);
+	        		if (newSent != null) {
+	        			set sent = newSent;
+						publish alertParking(parking);
+					}
+	        	}
+	        }
+	       set sent = ParkingChecker.cleanOldAlerts(sent);
+	}
+	
+	action initialize() {
+		set sent = ParkingsAlertsSent.getInstance();
+	}
+
+   subscribe GetParking!updateParcheggiTrento() => sendAlerts(data);
+}
+
+
+
+
