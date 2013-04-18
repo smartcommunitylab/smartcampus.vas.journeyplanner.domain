@@ -43,7 +43,8 @@ public class DelayChecker {
 		AlertDelay delay = new AlertDelay();
 		delay.setCreatorId("");
 		delay.setCreatorType(CreatorType.SERVICE);
-		delay.setDelay(train.getDelay());
+		// DELAY IS IN MILLISECONDS!
+		delay.setDelay(train.getDelay() * 60000);
 		delay.setDescription("");
 		delay.setNote("");
 
