@@ -149,7 +149,7 @@ public class AlertFilter {
 		return false;
 	}
 
-	private static boolean areEqual(Transport t1, Transport t2, boolean agency, boolean route, boolean trip, boolean type) {
+	public static boolean areEqual(Transport t1, Transport t2, boolean agency, boolean route, boolean trip, boolean type) {
 		boolean result = true;
 		if (agency) {
 			result &= areEqualOrNull(t1.getAgencyId(), t2.getAgencyId());
@@ -167,7 +167,7 @@ public class AlertFilter {
 		return result;
 	}
 
-	private static boolean areEqual(StopId s1, StopId s2, boolean agency, boolean id) {
+	public static boolean areEqual(StopId s1, StopId s2, boolean agency, boolean id) {
 		boolean result = true;
 		if (agency) {
 			result &= areEqualOrNull(s1.getAgencyId(), s2.getAgencyId());

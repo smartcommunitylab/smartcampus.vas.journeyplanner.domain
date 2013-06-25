@@ -36,14 +36,14 @@ public class AlertUpdater {
 		for (Leg leg : itinerary.getLeg()) {
 			Alert old = null;
 			if (alert instanceof AlertDelay) {
-				if (!leg.getTransport().equals(((AlertDelay) alert).getTransport())) {
+				if (!AlertFilter.areEqual(leg.getTransport(), ((AlertDelay) alert).getTransport(), true, false, true, true)) {
 					continue;
 				}
 				if (leg.getAlertDelayList() == null) {
 					leg.setAlertDelayList(new ArrayList<AlertDelay>());
 				}
 				for (AlertDelay alertDelay : leg.getAlertDelayList()) {
-					if (alertDelay.getTransport().equals(((AlertDelay) alert).getTransport())) {
+					if (AlertFilter.areEqual(alertDelay.getTransport(), ((AlertDelay) alert).getTransport(), true, false, true, true)) {
 						old = alertDelay;
 						break;
 					}
@@ -54,14 +54,14 @@ public class AlertUpdater {
 				leg.getAlertDelayList().add((AlertDelay) alert);
 			
 			} else if (alert instanceof AlertStrike) {
-				if (!leg.getTransport().equals(((AlertStrike) alert).getTransport())) {
+				if (!AlertFilter.areEqual(leg.getTransport(), ((AlertStrike) alert).getTransport(), true, false, true, true)) {
 					continue;
 				}
 				if (leg.getAlertStrikeList() == null) {
 					leg.setAlertStrikeList(new ArrayList<AlertStrike>());
 				}
 				for (AlertStrike alertStrike : leg.getAlertStrikeList()) {
-					if (alertStrike.getTransport().equals(((AlertStrike) alert).getTransport())) {
+					if (AlertFilter.areEqual(alertStrike.getTransport(), ((AlertStrike) alert).getTransport(), true, false, true, true)) {
 						old = alertStrike;
 						break;
 					}
