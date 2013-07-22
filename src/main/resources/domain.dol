@@ -117,6 +117,7 @@ DomainType ItineraryObject {
 	subscribe AlertFactory!alertParking() if (monitor) => checkParking(alert);
 	
 	subscribe TrainsAlertsSender!alertDelay() if (monitor) => checkDelay(alert);
+	subscribe ParkingAlertsSender!alertParking() if (monitor) => checkParking(alert);
     
 }
 
@@ -191,6 +192,7 @@ DomainType RecurrentJourneyObject {
 	subscribe AlertFactory!alertParking() if (monitor) => checkParking(alert);
     
     subscribe TrainsAlertsSender!alertDelay() if (monitor) => checkDelay(alert);
+	subscribe ParkingAlertsSender!alertParking() if (monitor) => checkParking(alert);    
     
     }
 
@@ -342,12 +344,14 @@ DomainObject GetParking {
 DomainObject ParkingAlertsSender {
 
     port alertParking(alert: AlertParking);
+    port alertAllParking(alert: AlertParking);
     
     public var sent : ParkingsAlertsSent;
 
 	action sendAlerts(list : Parking[]) {
 	        for (t in list) {
 	        	parking : AlertParking = ParkingChecker.checkParking(t);
+	        	publish alertAllParking(parking);
 	        	if (parking != null) {
 	        		newSent : ParkingsAlertsSent = ParkingChecker.checkNewAlerts(sent,t);
 	        		if (newSent != null) {
