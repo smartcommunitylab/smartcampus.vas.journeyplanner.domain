@@ -129,16 +129,19 @@ public class DelayChecker {
 
 		String delay = buildDate() + "_" + train.getDelay();
 		
-		if (!sent.getAlerts().containsKey(train.getTripId())) {
-			newSent.getAlerts().put(train.getTripId(), delay);
+		String tId = getTrainNumericId(train.getTripId());
+//		String tId = train.getTripId();
+		
+		if (!sent.getAlerts().containsKey(tId)) {
+			newSent.getAlerts().put(tId, delay);
 			return newSent;
 		}
 
-		if (sent.getAlerts().get(train.getTripId()).equals(delay)) {
+		if (sent.getAlerts().get(tId).equals(delay)) {
 			return null;
 		}
 
-		newSent.getAlerts().put(train.getTripId(), delay);
+		newSent.getAlerts().put(tId, delay);
 		
 		
 		
@@ -156,6 +159,10 @@ public class DelayChecker {
 			}
 		}
 		return newSent;
+	}
+	
+	private static String getTrainNumericId(String id) {
+		return id.replaceAll("\\D*", "");
 	}
 
 	private static String buildDate() {

@@ -151,6 +151,19 @@ public class AlertFilter {
 
 	public static boolean areEqual(Transport t1, Transport t2, boolean agency, boolean route, boolean trip, boolean type) {
 		boolean result = true;
+		
+		boolean numbersOnly = ("5".equals(t2.getAgencyId()) || "6".equals(t2.getAgencyId()));
+		String tId1 = t1.getTripId();
+		String tId2 = t2.getTripId();
+		if (numbersOnly) {
+			if (tId1 != null) {
+				tId1 = tId1.replaceAll("\\D*", "");
+			}
+			if (tId2 != null) {
+				tId2 = tId2.replaceAll("\\D*", "");
+			}			
+		}
+		
 		if (agency) {
 			result &= areEqualOrNull(t1.getAgencyId(), t2.getAgencyId());
 		}
@@ -158,7 +171,7 @@ public class AlertFilter {
 			result &= areEqualOrNull(t1.getRouteId(), t2.getRouteId());
 		}
 		if (result && trip) {
-			result &= areEqualOrNull(t1.getTripId(), t2.getTripId());
+			result &= areEqualOrNull(tId1, tId2);
 		}
 		if (result && type) {
 			result &= areEqualOrNull(t1.getType(), t2.getType());
