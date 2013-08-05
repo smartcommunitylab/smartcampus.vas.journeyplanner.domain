@@ -30,6 +30,7 @@ import it.sayservice.platform.smartplanner.data.message.alerts.AlertAccident;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertDelay;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertParking;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertStrike;
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertRoad;
 
 import smartcampus.services.journeyplanner.helpers.AlertFilter;
 import smartcampus.services.journeyplanner.helpers.DelayChecker;
@@ -42,6 +43,8 @@ import smartcampus.service.trentomale.data.message.Trentomale;
 import smartcampus.services.trentomale.TrainsAlertsSent;
 
 import eu.trentorise.smartcampus.service.parcheggi.data.message.Parcheggi.Parcheggio;
+
+import eu.trentorise.smartcampus.services.ordinanzerovereto.data.message.Ordinanzerovereto.Ordinanza;
 
 import smartcampus.services.parkings.Parking;
 import smartcampus.services.parkings.ParkingsAlertsSent;
@@ -370,6 +373,22 @@ DomainObject ParkingAlertsSender {
    subscribe GetParking!updateParcheggiTrento() => sendAlerts(data);
 }
 
+DomainType RoadAlertSender {
+	port sendRoadAlerts(data: AlertRoad[]);
+}
+
+DomainObject GetOrdinanzeRovereto implements RoadAlertSender {
+
+    @ServiceNotification(serviceId="eu.trentorise.smartcampus.services.ordinanzerovereto.OrdinanzeRoveretoService", methodName="GetOrdinanze", converter="smartcampus.services.ordinanze.OrdinanzeRoveretoConverter")
+	port sendRoadAlerts(data: AlertRoad[]);
+
+    @Subscription(serviceId="eu.trentorise.smartcampus.services.ordinanzerovereto.OrdinanzeRoveretoService", methodName="GetOrdinanze")
+    operation subscribeOrdinanzeRovereto();
+    
+    action initialize() {
+        invoke subscribeOrdinanzeRovereto();    
+	}
+}
 
 
 
