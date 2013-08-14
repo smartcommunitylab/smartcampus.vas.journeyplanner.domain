@@ -206,21 +206,26 @@ DomainObject AlertFactory {
     port alertDelay(alert: AlertDelay);
     port alertStrike(alert: AlertStrike);    
 	port alertParking(alert: AlertParking);
-//	port alertAccident(alert: AlertAccident);   	
+	port alertAccident(alert: AlertAccident);
+	port alertRoad(alert: AlertRoad);   	
 
-   @Local(actionName="submitAlertAccident")
+    @Local(actionName="submitAlertAccident")
     operation submitAlertAccident(newAlert:AlertAccident);    
     
-   @Local(actionName="submitAlertDelay")
+    @Local(actionName="submitAlertDelay")
     operation submitAlertDelay(newAlert:AlertDelay);
     
-   @Local(actionName="submitAlertParking")
+    @Local(actionName="submitAlertParking")
     operation submitAlertParking(newAlert:AlertParking); 
     
     @Local(actionName="submitAlertStrike")
     operation submitAlertStrike(newAlert:AlertStrike);     
 
+    @Local(actionName="submitAlertRoad")
+    operation submitAlertRoad(newAlert:AlertRoad);    
+
 	action submitAlertAccident(newAlert:AlertAccident) {
+		publish alertAccident(newAlert);
 	}	
 
 	action submitAlertDelay(newAlert:AlertDelay) {
@@ -233,6 +238,10 @@ DomainObject AlertFactory {
 	
 	action submitAlertStrike(newAlert:AlertStrike) {
 		publish alertStrike(newAlert);
+	}			
+
+	action submitAlertRoad(newAlert:AlertRoad) {
+		publish alertRoad(newAlert);
 	}			
 
 }
