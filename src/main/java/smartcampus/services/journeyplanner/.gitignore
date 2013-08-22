@@ -20,3 +20,9 @@
 /UserProfileFactoryInterface.java
 /UserProfileObjectDOEngine.java
 /UserProfileObjectInterface.java
+/GetOrdinanzeRoveretoDOEngine.java
+/GetOrdinanzeRoveretoInterface.java
+/RoadAlertSenderDOEngine.java
+/RoadAlertSenderInterface.java
+/UserAlertSenderDOEngine.java
+/UserAlertSenderInterface.java

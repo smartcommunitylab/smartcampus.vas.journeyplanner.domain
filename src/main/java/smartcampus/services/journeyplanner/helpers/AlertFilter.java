@@ -20,8 +20,11 @@ import it.sayservice.platform.smartplanner.data.message.Leg;
 import it.sayservice.platform.smartplanner.data.message.SimpleLeg;
 import it.sayservice.platform.smartplanner.data.message.StopId;
 import it.sayservice.platform.smartplanner.data.message.Transport;
+import it.sayservice.platform.smartplanner.data.message.alerts.Alert;
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertAccident;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertDelay;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertParking;
+import it.sayservice.platform.smartplanner.data.message.alerts.AlertRoad;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertStrike;
 import it.sayservice.platform.smartplanner.data.message.journey.RecurrentJourney;
 
@@ -33,6 +36,7 @@ import org.apache.log4j.Logger;
 
 public class AlertFilter {
 	
+	private static final long THRESHOLD = 1000 * 60 * 5;
 	static Logger log = Logger.getLogger(AlertFilter.class);
 
 	public static boolean filterDelay(Itinerary itinerary, AlertDelay alert) {
@@ -47,16 +51,32 @@ public class AlertFilter {
 		return filterParking(itinerary.getLeg(), alert);
 	}
 
-	public static boolean filterDelay(RecurrentJourney journey, AlertDelay alert) {
-		return filterRecurrentDelay(journey, alert);
+	public static boolean filterAccident(Itinerary itinerary, AlertAccident alert) {
+		return filterAccident(itinerary.getLeg(), alert);
 	}
 
-	public static boolean filterStrike(RecurrentJourney journey, AlertStrike alert) {
-		return filterRecurrentStrike(journey, alert);
+	public static boolean filterRoad(Itinerary itinerary, AlertRoad alert) {
+		return filterRoad(itinerary.getLeg(), alert);
 	}
 
-	public static boolean filterParking(RecurrentJourney journey, AlertParking alert) {
-		return filterRecurrentParking(journey, alert);
+	public static boolean filterDelay(RecurrentJourney journey, AlertDelay alert, AlertsSent alerts) {
+		return filterRecurrentDelay(journey, alert, alerts);
+	}
+
+	public static boolean filterStrike(RecurrentJourney journey, AlertStrike alert, AlertsSent alerts) {
+		return filterRecurrentStrike(journey, alert, alerts);
+	}
+
+	public static boolean filterParking(RecurrentJourney journey, AlertParking alert, AlertsSent alerts) {
+		return filterRecurrentParking(journey, alert, alerts);
+	}
+
+	public static boolean filterAccident(RecurrentJourney journey, AlertAccident alert, AlertsSent alerts) {
+		return filterRecurrentAccident(journey, alert, alerts);
+	}
+
+	public static boolean filterRoad(RecurrentJourney journey, AlertRoad alert, AlertsSent alerts) {
+		return filterRecurrentRoad(journey, alert, alerts);
 	}
 
 	private static boolean filterDelay(List<Leg> legs, AlertDelay alert) {
@@ -67,7 +87,13 @@ public class AlertFilter {
 				if (areEqual(leg.getTransport(), alert.getTransport(), true, false, true, true)) {
 					Calendar c = Calendar.getInstance();
 					c.setTimeInMillis(leg.getStartime());
-					return c.get(Calendar.YEAR) == ac.get(Calendar.YEAR) && c.get(Calendar.DAY_OF_YEAR) == ac.get(Calendar.DAY_OF_YEAR);
+					if (c.get(Calendar.YEAR) == ac.get(Calendar.YEAR) && c.get(Calendar.DAY_OF_YEAR) == ac.get(Calendar.DAY_OF_YEAR)) {
+						// found, check the existing alerts
+						return checkExistingDelayAlerts(leg.getAlertDelayList(),alert);
+					} else {
+						// different date, not applicable
+						return false;
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -77,7 +103,17 @@ public class AlertFilter {
 		return false;
 	}
 
-	private static boolean filterRecurrentDelay(RecurrentJourney journey, AlertDelay alert) {
+	private static boolean checkExistingDelayAlerts(List<AlertDelay> list, AlertDelay alert) {
+		if (list == null || list.isEmpty()) return true;
+		// assume singleton here...
+		AlertDelay old = list.get(0);
+		if (old.getTo() < System.currentTimeMillis()) return true;
+		else {
+			return Math.abs(old.getDelay()-alert.getDelay()) > THRESHOLD;
+		}
+	}
+
+	private static boolean filterRecurrentDelay(RecurrentJourney journey, AlertDelay alert, AlertsSent alerts) {
 		try {
 			String transportId = alert.getTransport().getAgencyId() + "_" + alert.getTransport().getRouteId();
 			if (!journey.getMonitorLegs().containsKey(transportId) || journey.getMonitorLegs().get(transportId) == false) {
@@ -89,7 +125,9 @@ public class AlertFilter {
 					Calendar cal = new GregorianCalendar();
 					cal.setTimeInMillis(System.currentTimeMillis());
 					if (journey.getParameters().getRecurrence().contains(cal.get(Calendar.DAY_OF_WEEK))) {
-						return true;
+						// found, check the existing alerts
+						if (alerts == null) return true;
+						return alerts.check(buildId(alert), alert.getDelay(), THRESHOLD);
 					}
 				}
 			}
@@ -100,6 +138,7 @@ public class AlertFilter {
 		return false;
 	}
 
+	
 	private static boolean filterStrike(List<Leg> legs, AlertStrike alert) {
 		try {
 		for (Leg leg : legs) {
@@ -114,8 +153,8 @@ public class AlertFilter {
 		return false;
 	}
 
-	private static boolean filterRecurrentStrike(RecurrentJourney journey, AlertStrike alert) {
-		// TBD
+	private static boolean filterRecurrentStrike(RecurrentJourney journey, AlertStrike alert, AlertsSent alerts) {
+		// TODO currently not supported
 		return false;
 	}
 
@@ -144,10 +183,28 @@ public class AlertFilter {
 		return false;
 	}
 
-	private static boolean filterRecurrentParking(RecurrentJourney journey, AlertParking alert) {
-		// TBD
+	private static boolean filterRecurrentParking(RecurrentJourney journey, AlertParking alert, AlertsSent alerts) {
+		// TODO currently not supported
 		return false;
 	}
+
+	private static boolean filterAccident(List<Leg> legs, AlertAccident alert) {
+		// TODO currently not supported
+		return false;
+	}
+	private static boolean filterRecurrentAccident(RecurrentJourney journey, AlertAccident alert, AlertsSent alerts) {
+		// TODO currently not supported
+		return false;
+	}
+	private static boolean filterRoad(List<Leg> legs, AlertRoad alert) {
+		// TODO currently not supported
+		return false;
+	}
+	private static boolean filterRecurrentRoad(RecurrentJourney journey, AlertRoad alert, AlertsSent alerts) {
+		// TODO currently not supported
+		return false;
+	}
+
 
 	public static boolean areEqual(Transport t1, Transport t2, boolean agency, boolean route, boolean trip, boolean type) {
 		boolean result = true;
@@ -200,6 +257,19 @@ public class AlertFilter {
 			return o1.equals(o2);
 		}
 		return false;
+	}
+
+	public static String buildId(Alert alert) {
+		String s = null;
+		if (alert instanceof AlertDelay) {
+			s = "AD_" + ((AlertDelay) alert).getTransport().getAgencyId() + "_" + ((AlertDelay) alert).getTransport().getRouteId() + "_" + ((AlertDelay) alert).getTransport().getTripId();
+		} else if (alert instanceof AlertStrike) {
+			s = "AD_" + ((AlertStrike) alert).getTransport().getAgencyId() + "_" + ((AlertStrike) alert).getTransport().getRouteId() + "_" + ((AlertStrike) alert).getTransport().getTripId();
+		} else if (alert instanceof AlertParking) {
+			s = "AP_" + ((AlertParking) alert).getPlace().getAgencyId() + "_" + ((AlertParking) alert).getPlace().getId();
+		}
+		
+		return s;
 	}
 
 }

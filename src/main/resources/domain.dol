@@ -36,6 +36,7 @@ import smartcampus.services.journeyplanner.helpers.AlertFilter;
 import smartcampus.services.journeyplanner.helpers.DelayChecker;
 import smartcampus.services.journeyplanner.helpers.ParkingChecker;
 import smartcampus.services.journeyplanner.helpers.AlertUpdater;
+import smartcampus.services.journeyplanner.helpers.AlertsSent;
 
 import smartcampus.services.oraritreni.delays.GenericTrain;
 
@@ -50,7 +51,13 @@ import smartcampus.services.parkings.Parking;
 import smartcampus.services.parkings.ParkingsAlertsSent;
 
 
-
+DomainType UserAlertSender {
+    port alertDelay(alert: AlertDelay, userId : String, clientId : String, title: String);
+    port alertStrike(alert: AlertStrike, userId : String, clientId : String, title: String);  
+	port alertParking(alert: AlertParking, userId : String, clientId : String, title: String);
+	port alertAccident(alert: AlertAccident, userId : String, clientId : String, title: String);  
+	port alertRoad(alert: AlertRoad, userId : String, clientId : String, title: String);  
+}
 
 // SINGLE
 
@@ -65,12 +72,7 @@ DomainObject ItineraryFactory {
 	
 }
 
-DomainType ItineraryObject {
-
-    port alertDelay(alert: AlertDelay, userId : String, clientId : String, title: String);
-    port alertStrike(alert: AlertStrike, userId : String, clientId : String, title: String);  
-	port alertParking(alert: AlertParking, userId : String, clientId : String, title: String);
-//	port alertAccident(alert: AlertAccident, userId : String, clientId : String, title: String);  
+DomainType ItineraryObject implements UserAlertSender {
 
 	public immutable var userId : String;
 	public immutable var clientId : String;
@@ -114,7 +116,23 @@ DomainType ItineraryObject {
 			publish alertParking(alert, userId, clientId, name);		
 		} 
     }      
+
+   action checkAccident(alert:AlertAccident) {
+		if (AlertFilter.filterAccident(data, alert)) {
+			set data = AlertUpdater.updateAlerts(data,alert);
+			publish alertAccident(alert, userId, clientId, name);		
+		} 
+    }      
     
+    action checkRoad(alert:AlertRoad) {
+		if (AlertFilter.filterRoad(data, alert)) {
+			set data = AlertUpdater.updateAlerts(data,alert);
+			publish alertRoad(alert, userId, clientId, name);		
+		} 
+    }      
+    
+	subscribe AlertFactory!alertAccident() if (monitor) => checkAccident(alert);
+	subscribe AlertFactory!alertRoad() if (monitor) => checkRoad(alert);
 	subscribe AlertFactory!alertDelay() if (monitor) => checkDelay(alert);
 	subscribe AlertFactory!alertStrike() if (monitor) => checkStrike(alert);
 	subscribe AlertFactory!alertParking() if (monitor) => checkParking(alert);
@@ -136,12 +154,7 @@ DomainObject RecurrentJourneyFactory {
 	}
 }	
 
-DomainType RecurrentJourneyObject {
-
-    port alertDelay(alert: AlertDelay, userId : String, clientId: String, title: String);
-    port alertStrike(alert: AlertStrike, userId : String, clientId: String, title: String);  
-	port alertParking(alert: AlertParking, userId : String, clientId: String, title: String);
-//	port alertAccident(alert: AlertAccident, userId : String, clientId: String, title: String);  
+DomainType RecurrentJourneyObject implements UserAlertSender{
 
 	public immutable var userId : String;
 	public immutable var clientId : String;
@@ -149,6 +162,8 @@ DomainType RecurrentJourneyObject {
 	public var data: RecurrentJourney; 
 	
 	public var monitor: boolean; 
+	
+	private var alerts : AlertsSent;
 	
 	@Local(actionName="updateRecurrentJourney")
     operation updateRecurrentJourney(newJourney:RecurrentJourney,newName:String,newMonitor:boolean);	
@@ -173,23 +188,42 @@ DomainType RecurrentJourneyObject {
     }
     
     action checkDelay(alert:AlertDelay) {
-		if (AlertFilter.filterDelay(data, alert)) { 
+		if (AlertFilter.filterDelay(data, alert, alerts)) { 
 			publish alertDelay(alert, userId, clientId, name);
+			set alerts = AlertUpdater.updateAlerts(alert, alerts);
 		}
     }
     
    action checkStrike(alert:AlertStrike) {
-		if (AlertFilter.filterStrike(data, alert)) {
+		if (AlertFilter.filterStrike(data, alert, alerts)) {
 			publish alertStrike(alert, userId, clientId, name);
+			set alerts = AlertUpdater.updateAlerts(alert, alerts);
 		} 
     }    
     
    action checkParking(alert:AlertParking) {
-		if (AlertFilter.filterParking(data, alert)) {
+		if (AlertFilter.filterParking(data, alert, alerts)) {
 			publish alertParking(alert, userId, clientId, name);		
+			set alerts = AlertUpdater.updateAlerts(alert, alerts);
 		} 
     }      
     
+   action checkAccident(alert:AlertAccident) {
+		if (AlertFilter.filterAccident(data, alert, alerts)) {
+			publish alertAccident(alert, userId, clientId, name);		
+			set alerts = AlertUpdater.updateAlerts(alert, alerts);
+		} 
+    }      
+    
+    action checkRoad(alert:AlertRoad) {
+		if (AlertFilter.filterRoad(data, alert, alerts)) {
+			publish alertRoad(alert, userId, clientId, name);		
+			set alerts = AlertUpdater.updateAlerts(alert, alerts);
+		} 
+    }      
+    
+	subscribe AlertFactory!alertAccident() if (monitor) => checkAccident(alert);
+	subscribe AlertFactory!alertRoad() if (monitor) => checkRoad(alert);
 	subscribe AlertFactory!alertDelay() if (monitor) => checkDelay(alert);
 	subscribe AlertFactory!alertStrike() if (monitor) => checkStrike(alert);
 	subscribe AlertFactory!alertParking() if (monitor) => checkParking(alert);
@@ -246,42 +280,6 @@ DomainObject AlertFactory {
 
 }
 
-// USER PROFILE
-
-DomainObject UserProfileFactory {
-
-    @Local(actionName="createUserProfile")
-    operation createUserProfile(userProfile:JourneyPlannerUserProfile, clientId:String, newUserId:String);
-    
-   action createUserProfile(userProfile:JourneyPlannerUserProfile,clientId:String, newUserId:String) {
-   	    user : UserProfileObject[] = query UserProfileObject(userId == newUserId);
-        if (user == null || count(user) == 0) {
-   			create UserProfileObject(data:userProfile, clientId: clientId, userId:newUserId);
-   		}
-	}
-}	
-
-
-DomainType UserProfileObject {
-
-	public immutable var userId : String;
-	public immutable var clientId : String;
-	
-	public var data : JourneyPlannerUserProfile;
-	
-	@Local(actionName="updateUserProfile")
-    operation updateUserProfile(newProfile:JourneyPlannerUserProfile);
-    
-    @Local(actionName="deleteUserProfile")
-    operation deleteUserProfile();
-    
-    action updateUserProfile(newProfile:JourneyPlannerUserProfile) {
-    	set data = newProfile;
-    }
-    
-    action deleteUserProfile() => terminate;
-	
-}
 
 // SERVICES
 

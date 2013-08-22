@@ -31,6 +31,20 @@ public class AlertUpdater {
 	
 	static Logger log = Logger.getLogger(AlertUpdater.class);
 
+	public static AlertsSent updateAlerts(Alert alert, AlertsSent alerts) {
+		if (alerts == null) alerts = AlertsSent.getInstance();
+		String id = AlertFilter.buildId(alert);
+		Long value = null;
+		if (alert instanceof AlertDelay) {
+			value = ((AlertDelay) alert).getDelay();
+		} else if (alert instanceof AlertParking) {
+			value = (long)((AlertParking) alert).getPlacesAvailable();
+		}
+		alerts.add(id, value, alert.getTo());
+
+		return alerts;
+	}
+	
 	public static Itinerary updateAlerts(Itinerary itinerary, Alert alert) {
 		try {
 		for (Leg leg : itinerary.getLeg()) {
