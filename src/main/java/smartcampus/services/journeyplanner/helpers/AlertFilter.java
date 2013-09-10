@@ -40,42 +40,52 @@ public class AlertFilter {
 	static Logger log = Logger.getLogger(AlertFilter.class);
 
 	public static boolean filterDelay(Itinerary itinerary, AlertDelay alert) {
+		if (itinerary == null) return false;
 		return filterDelay(itinerary.getLeg(), alert);
 	}
 
 	public static boolean filterStrike(Itinerary itinerary, AlertStrike alert) {
+		if (itinerary == null) return false;
 		return filterStrike(itinerary.getLeg(), alert);
 	}
 
 	public static boolean filterParking(Itinerary itinerary, AlertParking alert) {
+		if (itinerary == null) return false;
 		return filterParking(itinerary.getLeg(), alert);
 	}
 
 	public static boolean filterAccident(Itinerary itinerary, AlertAccident alert) {
+		if (itinerary == null) return false;
 		return filterAccident(itinerary.getLeg(), alert);
 	}
 
 	public static boolean filterRoad(Itinerary itinerary, AlertRoad alert) {
+		if (itinerary == null) return false;
 		return filterRoad(itinerary.getLeg(), alert);
 	}
 
 	public static boolean filterDelay(RecurrentJourney journey, AlertDelay alert, AlertsSent alerts) {
+		if (journey == null) return false;
 		return filterRecurrentDelay(journey, alert, alerts);
 	}
 
 	public static boolean filterStrike(RecurrentJourney journey, AlertStrike alert, AlertsSent alerts) {
+		if (journey == null) return false;
 		return filterRecurrentStrike(journey, alert, alerts);
 	}
 
 	public static boolean filterParking(RecurrentJourney journey, AlertParking alert, AlertsSent alerts) {
+		if (journey == null) return false;
 		return filterRecurrentParking(journey, alert, alerts);
 	}
 
 	public static boolean filterAccident(RecurrentJourney journey, AlertAccident alert, AlertsSent alerts) {
+		if (journey == null) return false;
 		return filterRecurrentAccident(journey, alert, alerts);
 	}
 
 	public static boolean filterRoad(RecurrentJourney journey, AlertRoad alert, AlertsSent alerts) {
+		if (journey == null) return false;
 		return filterRecurrentRoad(journey, alert, alerts);
 	}
 
