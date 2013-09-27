@@ -25,6 +25,7 @@ import it.sayservice.platform.smartplanner.data.message.alerts.CreatorType;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,7 +42,6 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 	private static final String DIVIETO_DI_TRANSITO = "divieto di transito";
 	private static final String DIVIETO_DI_SOSTA = "divieto di sosta";
 	private static final String DIVIETO_DI_SOSTA_CON = "divieto di sosta con rimozione coatta";
-	private static final long PERMANENT_TIME_FRAME = 1000*60*60*24*60; // two months
 	
 	@Override
 	public Serializable toMessage(Map<String, Object> parameters) {
@@ -57,6 +57,9 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 		List<ByteString> data = (List<ByteString>) object;
 		Tuple res = new Tuple();
 		List<AlertRoad> list = new ArrayList<AlertRoad>();
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, -60);
+		
 		for (ByteString bs : data) {
 			try {
 				Ordinanza t = Ordinanza.parseFrom(bs);
@@ -73,8 +76,7 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 					ar.setId(t.getId()+"_"+via.getCodiceVia());
 					ar.setRoad(toRoadElement(via,t));
 					ar.setChangeTypes(getTypes(via,t));
-					if (!t.getTipologia().equals("Permanente") ||
-					    ar.getFrom() > System.currentTimeMillis()-PERMANENT_TIME_FRAME) 
+					if (!t.getTipologia().equals("Permanente") || ar.getFrom() > c.getTimeInMillis()) 
 					{
 						list.add(ar);
 					}
@@ -123,5 +125,4 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 		if (via.hasNote()) re.setNote(via.getNote());
 		return re;
 	}
-
 }
