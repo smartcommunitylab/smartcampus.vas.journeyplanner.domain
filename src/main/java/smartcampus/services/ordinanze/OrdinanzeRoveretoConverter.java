@@ -20,7 +20,6 @@ import it.sayservice.platform.core.domain.ext.Tuple;
 import it.sayservice.platform.smartplanner.data.message.RoadElement;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertRoad;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertRoadType;
-import it.sayservice.platform.smartplanner.data.message.alerts.AlertType;
 import it.sayservice.platform.smartplanner.data.message.alerts.CreatorType;
 
 import java.io.Serializable;
@@ -42,6 +41,7 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 	private static final String DIVIETO_DI_TRANSITO = "divieto di transito";
 	private static final String DIVIETO_DI_SOSTA = "divieto di sosta";
 	private static final String DIVIETO_DI_SOSTA_CON = "divieto di sosta con rimozione coatta";
+	private static final long PERMANENT_TIME_FRAME = 1000*60*60*24*60; // two months
 	
 	@Override
 	public Serializable toMessage(Map<String, Object> parameters) {
@@ -61,7 +61,6 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 			try {
 				Ordinanza t = Ordinanza.parseFrom(bs);
 				if (t.getVieCount() == 0) continue;
-				if (t.getTipologia().equals("Permanente")) continue;
 				for (int i = 0; i < t.getVieCount(); i++) {
 					Via via = t.getVie(i);
 					AlertRoad ar = new AlertRoad();
@@ -74,7 +73,11 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 					ar.setId(t.getId()+"_"+via.getCodiceVia());
 					ar.setRoad(toRoadElement(via,t));
 					ar.setChangeTypes(getTypes(via,t));
-					list.add(ar);
+					if (!t.getTipologia().equals("Permanente") ||
+					    ar.getFrom() > System.currentTimeMillis()-PERMANENT_TIME_FRAME) 
+					{
+						list.add(ar);
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
