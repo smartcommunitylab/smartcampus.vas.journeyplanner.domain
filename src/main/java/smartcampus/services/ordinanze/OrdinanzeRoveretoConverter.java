@@ -23,6 +23,7 @@ import it.sayservice.platform.smartplanner.data.message.alerts.AlertRoadType;
 import it.sayservice.platform.smartplanner.data.message.alerts.CreatorType;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,7 +39,7 @@ import eu.trentorise.smartcampus.services.ordinanzerovereto.data.message.Ordinan
 public class OrdinanzeRoveretoConverter implements DataConverter {
 
 	private static final String DIVIETO_DI_TRANSITO_E_DI_SOSTA = "divieto di transito e di sosta";
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	private static final String DIVIETO_DI_TRANSITO = "divieto di transito";
 	private static final String DIVIETO_DI_SOSTA = "divieto di sosta";
 	private static final String DIVIETO_DI_SOSTA_CON = "divieto di sosta con rimozione coatta";
@@ -76,10 +77,10 @@ public class OrdinanzeRoveretoConverter implements DataConverter {
 					ar.setId(t.getId()+"_"+via.getCodiceVia());
 					ar.setRoad(toRoadElement(via,t));
 					ar.setChangeTypes(getTypes(via,t));
-					if (!t.getTipologia().equals("Permanente") || ar.getFrom() > c.getTimeInMillis()) 
-					{
+//					if (!t.getTipologia().equals("Permanente") || ar.getFrom() > c.getTimeInMillis()) 
+//					{
 						list.add(ar);
-					}
+//					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
