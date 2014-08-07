@@ -47,7 +47,7 @@ public class ParkingChecker {
 		AlertParking places = new AlertParking();
 		places.setCreatorId("");
 		places.setCreatorType(CreatorType.SERVICE);
-		places.setNoOfvehicles(-1);
+		places.setNoOfvehicles(parking.getVehicles());
 		places.setPlacesAvailable(parking.getFreePlaces());
 		places.setDescription("");
 		places.setNote("");

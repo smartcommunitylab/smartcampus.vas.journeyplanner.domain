@@ -8,6 +8,8 @@ public class Parking {
 	private String address;
 	
 	private int freePlaces;
+	
+	private int vehicles = -1;
 
 	public String getAgencyId() {
 		return agencyId;
@@ -39,6 +41,14 @@ public class Parking {
 
 	public void setFreePlaces(int places) {
 		this.freePlaces = places;
+	}
+
+	public int getVehicles() {
+		return vehicles;
+	}
+
+	public void setVehicles(int vehicles) {
+		this.vehicles = vehicles;
 	}
 	
 	

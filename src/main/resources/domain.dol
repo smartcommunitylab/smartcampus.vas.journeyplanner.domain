@@ -47,6 +47,8 @@ import eu.trentorise.smartcampus.service.parcheggi.data.message.Parcheggi.Parche
 
 import eu.trentorise.smartcampus.services.ordinanzerovereto.data.message.Ordinanzerovereto.Ordinanza;
 
+import eu.trentorise.smartcampus.service.tobike.data.message.Tobike.Stazione;
+
 import smartcampus.services.parkings.Parking;
 import smartcampus.services.parkings.ParkingsAlertsSent;
 
@@ -348,8 +350,24 @@ DomainObject GetParking {
     action initialize() {
         invoke subscribeParcheggiTrento();    
 	}
+}
+
+DomainObject GetStazioni {
+
+    @ServiceNotification(serviceId="smartcampus.service.tobike", methodName="GetStazioni", converter="smartcampus.services.parkings.StazioniTobikeConverter")
+    port updateStazioni(data : Parking[]);
+
+    @Subscription(serviceId="smartcampus.service.tobike", methodName="GetStazioni")
+    operation subscribeStazioni(user:String,password:String,code:String);
+    
+    action initialize() {
+               invoke subscribeStazioni("", "", "");  
+	}
 
 }
+
+
+
 
 DomainObject ParkingAlertsSender {
 
@@ -378,6 +396,7 @@ DomainObject ParkingAlertsSender {
 	}
 
    subscribe GetParking!updateParcheggiTrento() => sendAlerts(data);
+   subscribe GetStazioni!updateStazioni() => sendAlerts(data);
 }
 
 DomainType RoadAlertSender {
