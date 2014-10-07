@@ -26,3 +26,5 @@
 /RoadAlertSenderInterface.java
 /UserAlertSenderDOEngine.java
 /UserAlertSenderInterface.java
+/GetStazioniDOEngine.java
+/GetStazioniInterface.java
