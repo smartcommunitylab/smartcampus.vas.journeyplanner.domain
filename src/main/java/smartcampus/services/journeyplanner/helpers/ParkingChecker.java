@@ -15,11 +15,7 @@
  ******************************************************************************/
 package smartcampus.services.journeyplanner.helpers;
 
-import it.sayservice.platform.smartplanner.data.message.Position;
 import it.sayservice.platform.smartplanner.data.message.StopId;
-import it.sayservice.platform.smartplanner.data.message.TType;
-import it.sayservice.platform.smartplanner.data.message.Transport;
-import it.sayservice.platform.smartplanner.data.message.alerts.AlertDelay;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertParking;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertType;
 import it.sayservice.platform.smartplanner.data.message.alerts.CreatorType;
@@ -32,10 +28,8 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import smartcampus.services.oraritreni.delays.GenericTrain;
 import smartcampus.services.parkings.Parking;
 import smartcampus.services.parkings.ParkingsAlertsSent;
-import smartcampus.services.trentomale.TrainsAlertsSent;
 
 public class ParkingChecker {
 

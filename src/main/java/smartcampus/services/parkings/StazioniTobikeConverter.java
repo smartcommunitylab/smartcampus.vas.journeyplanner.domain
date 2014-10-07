@@ -26,7 +26,6 @@ import java.util.TreeMap;
 
 import com.google.protobuf.ByteString;
 
-import eu.trentorise.smartcampus.service.parcheggi.data.message.Parcheggi.Parcheggio;
 import eu.trentorise.smartcampus.service.tobike.data.message.Tobike.Stazione;
 
 public class StazioniTobikeConverter implements DataConverter {

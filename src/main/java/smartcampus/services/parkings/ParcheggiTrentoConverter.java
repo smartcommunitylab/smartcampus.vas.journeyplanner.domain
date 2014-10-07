@@ -52,6 +52,7 @@ public class ParcheggiTrentoConverter implements DataConverter {
 				p.setId(t.getId());
 				p.setAddress(t.getAddress());
 				p.setFreePlaces(Integer.parseInt(t.getPlaces()));
+				p.setVehicles(-1);
 				list.add(p);
 			} catch (Exception e) {
 				e.printStackTrace();
