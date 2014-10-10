@@ -177,14 +177,14 @@ public class AlertFilter {
 
 			if (areEqual(stop, alert.getPlace(), true, true)) {
 				if(stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
-					if (alert.getNoOfvehicles() < 3) {
-//						log.info("Few bikes to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
+					if (alert.getNoOfvehicles() < 3 && alert.getNoOfvehicles() > 0) {
+//						log.info("Few vehicles to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
 						return true;
 					}
 				}
 				if(!stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
-					if (alert.getPlacesAvailable() < 3) {
-//						log.info("Few bike places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
+					if (alert.getPlacesAvailable() < 3 && alert.getPlacesAvailable() > 0) {
+//						log.info("Few vehicle places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
 						return true;
 					}
 				}				
@@ -196,14 +196,14 @@ public class AlertFilter {
 			}
 			if (areEqual(stop, alert.getPlace(), true, true)) {
 				if(stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
-					if (alert.getPlacesAvailable() < 3) {
-//						log.info("Few bike places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
+					if (alert.getPlacesAvailable() < 3  && alert.getPlacesAvailable() > 0) {
+//						log.info("Few vehicle places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
 						return true;
 					}
 				}
 				if(!stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
-					if (alert.getNoOfvehicles() < 3) {
-//						log.info("Few bikes to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
+					if (alert.getNoOfvehicles() < 3 && alert.getPlacesAvailable() > 0) {
+//						log.info("Few vehicles to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
 						return true;
 					}
 				}					
