@@ -343,12 +343,19 @@ DomainObject GetParking {
 
     @ServiceNotification(serviceId="smartcampus.service.parcheggi", methodName="GetParcheggiTrento", converter="smartcampus.services.parkings.ParcheggiTrentoConverter")
     port updateParcheggiTrento(data : Parking[]);
+    
+    @ServiceNotification(serviceId="smartcampus.service.parcheggi", methodName="GetParcheggiRovereto", converter="smartcampus.services.parkings.ParcheggiRoveretoConverter")
+    port updateParcheggiRovereto(data : Parking[]);    
 
     @Subscription(serviceId="smartcampus.service.parcheggi", methodName="GetParcheggiTrento")
     operation subscribeParcheggiTrento();
     
+    @Subscription(serviceId="smartcampus.service.parcheggi", methodName="GetParcheggiRovereto")
+    operation subscribeParcheggiRovereto();    
+    
     action initialize() {
-        invoke subscribeParcheggiTrento();    
+        invoke subscribeParcheggiTrento();
+        invoke subscribeParcheggiRovereto();        
 	}
 }
 
@@ -361,7 +368,7 @@ DomainObject GetStazioni {
     operation subscribeStazioni(user:String,password:String,code:String);
     
     action initialize() {
-               invoke subscribeStazioni("", "", "");  
+               invoke subscribeStazioni("rovereto", "Rov14!", "5061");  
 	}
 
 }
@@ -396,6 +403,7 @@ DomainObject ParkingAlertsSender {
 	}
 
    subscribe GetParking!updateParcheggiTrento() => sendAlerts(data);
+   subscribe GetParking!updateParcheggiRovereto() => sendAlerts(data);
    subscribe GetStazioni!updateStazioni() => sendAlerts(data);
 }
 
