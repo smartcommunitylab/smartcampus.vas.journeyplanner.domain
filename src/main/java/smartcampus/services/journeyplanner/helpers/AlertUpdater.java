@@ -86,9 +86,11 @@ public class AlertUpdater {
 				leg.getAlertStrikeList().add((AlertStrike) alert);
 			
 			} else if (alert instanceof AlertParking) {
-				if (!leg.getTo().getStopId().equals(((AlertParking)alert).getPlace())) {
+				AlertParking ap = (AlertParking)alert;
+				if ((leg.getTo() == null || leg.getTo().getStopId() == null || !leg.getTo().getStopId().equals(ap.getPlace()) || ap.getPlacesAvailable() < 0) &&
+					(leg.getFrom() == null || leg.getFrom().getStopId() == null || !leg.getFrom().getStopId().equals(ap.getPlace()) || ap.getNoOfvehicles() < 0))
 					continue;
-				}
+				
 				if (leg.getAlertParkingList() == null) {
 					leg.setAlertParkingList(new ArrayList<AlertParking>());
 				}				

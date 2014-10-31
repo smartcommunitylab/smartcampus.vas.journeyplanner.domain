@@ -82,8 +82,6 @@ public class ParkingChecker {
 
 		newSent.getAlerts().put(parking.getId(), places);
 		
-		
-		
 		return newSent;
 	}
 

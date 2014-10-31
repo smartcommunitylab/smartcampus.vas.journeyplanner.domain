@@ -30,12 +30,14 @@ import it.sayservice.platform.smartplanner.data.message.alerts.AlertStrike;
 import it.sayservice.platform.smartplanner.data.message.journey.RecurrentJourney;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 
 public class AlertFilter {
 	
@@ -190,11 +192,12 @@ public class AlertFilter {
 		}
 		newParking.setNote(parking.getNote());
 		newParking.setPlace(parking.getPlace());
+		Map<String,Object> extra = new HashMap<String, Object>();
+		extra.put("transport", transport.toString());
 		if (newParking.getPlace().getExtra() != null) {
-			newParking.getPlace().getExtra().put("transport", transport.toString());
-		} else {
-			newParking.getPlace().setExtra(Collections.singletonMap("transport", transport.toString()));
+			extra.putAll(newParking.getPlace().getExtra());
 		}
+		newParking.getPlace().setExtra(extra);
 		newParking.setTo(parking.getTo());
 		newParking.setType(parking.getType());
 		
@@ -210,6 +213,7 @@ public class AlertFilter {
 
 			
 			if (areEqual(stop, alert.getPlace(), true, true)) {
+				System.err.println("FOUND FROM :" +stop.getId());
 				if(stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
 					if (alert.getNoOfvehicles() < 3 && alert.getNoOfvehicles() > 0) {
 //						log.info("Few vehicles to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
@@ -229,6 +233,7 @@ public class AlertFilter {
 				continue;
 			}
 			if (areEqual(stop, alert.getPlace(), true, true)) {
+				System.err.println("FOUND TO :" +stop.getId());
 				if(stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
 					if (alert.getPlacesAvailable() < 3  && alert.getPlacesAvailable() > 0) {
 //						log.info("Few vehicle places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
@@ -306,6 +311,7 @@ public class AlertFilter {
 	}
 
 	public static boolean areEqual(StopId s1, StopId s2, boolean agency, boolean id) {
+
 		boolean result = true;
 		if (agency) {
 			result &= areEqualOrNull(s1.getAgencyId(), s2.getAgencyId());
