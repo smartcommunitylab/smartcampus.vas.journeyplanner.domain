@@ -19,6 +19,7 @@ import it.sayservice.platform.smartplanner.data.message.Itinerary;
 import it.sayservice.platform.smartplanner.data.message.Leg;
 import it.sayservice.platform.smartplanner.data.message.SimpleLeg;
 import it.sayservice.platform.smartplanner.data.message.StopId;
+import it.sayservice.platform.smartplanner.data.message.TType;
 import it.sayservice.platform.smartplanner.data.message.Transport;
 import it.sayservice.platform.smartplanner.data.message.alerts.Alert;
 import it.sayservice.platform.smartplanner.data.message.alerts.AlertAccident;
@@ -33,6 +34,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 public class AlertFilter {
 	
@@ -49,8 +52,8 @@ public class AlertFilter {
 		return filterStrike(itinerary.getLeg(), alert);
 	}
 
-	public static boolean filterParking(Itinerary itinerary, AlertParking alert) {
-		if (itinerary == null) return false;
+	public static AlertParking filterParking(Itinerary itinerary, AlertParking alert) {
+		if (itinerary == null) return null;
 		return filterParking(itinerary.getLeg(), alert);
 	}
 
@@ -168,26 +171,57 @@ public class AlertFilter {
 		return false;
 	}
 
-	private static boolean filterParking(List<Leg> legs, AlertParking alert) {
+	private static AlertParking userParkingAlert(AlertParking parking, boolean from, TType transport) {
+		AlertParking newParking = new AlertParking();
+		newParking.setCreatorId(parking.getCreatorId());
+		newParking.setCreatorType(parking.getCreatorType());
+		newParking.setDescription(parking.getDescription());
+		newParking.setEffect(parking.getEffect());
+		newParking.setEntity(parking.getEntity());
+		newParking.setFrom(parking.getFrom());
+		newParking.setId(parking.getId());
+		
+		if (from) {
+			newParking.setNoOfvehicles(parking.getNoOfvehicles());
+			newParking.setPlacesAvailable(-1);
+		} else {
+			newParking.setNoOfvehicles(-1);
+			newParking.setPlacesAvailable(parking.getPlacesAvailable());
+		}
+		newParking.setNote(parking.getNote());
+		newParking.setPlace(parking.getPlace());
+		if (newParking.getPlace().getExtra() != null) {
+			newParking.getPlace().getExtra().put("transport", transport.toString());
+		} else {
+			newParking.getPlace().setExtra(Collections.singletonMap("transport", transport.toString()));
+		}
+		newParking.setTo(parking.getTo());
+		newParking.setType(parking.getType());
+		
+		return newParking;
+	}
+	
+	private static AlertParking filterParking(List<Leg> legs, AlertParking alert) {
 		for (Leg leg: legs) {
 			StopId stop = leg.getFrom().getStopId();
 			if (stop == null) {
 				continue;
 			}
 
+			
 			if (areEqual(stop, alert.getPlace(), true, true)) {
 				if(stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
 					if (alert.getNoOfvehicles() < 3 && alert.getNoOfvehicles() > 0) {
 //						log.info("Few vehicles to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
-						return true;
+						return userParkingAlert(alert, true, leg.getTransport().getType());
 					}
 				}
-				if(!stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
-					if (alert.getPlacesAvailable() < 3 && alert.getPlacesAvailable() > 0) {
-//						log.info("Few vehicle places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
-						return true;
-					}
-				}				
+//				if(!stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
+//					if (alert.getPlacesAvailable() < 3 && alert.getPlacesAvailable() > 0) {
+////						log.info("Few vehicle places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
+//						return userParkingAlert(alert, true, leg.getTransport().getType());
+//					}
+//				}				
 				
 			}
 			stop = leg.getTo().getStopId();
@@ -198,15 +232,15 @@ public class AlertFilter {
 				if(stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
 					if (alert.getPlacesAvailable() < 3  && alert.getPlacesAvailable() > 0) {
 //						log.info("Few vehicle places (" + alert.getPlacesAvailable() + ") @" + stop.getId());
-						return true;
+						return userParkingAlert(alert, false, leg.getTransport().getType());
 					}
 				}
-				if(!stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
-					if (alert.getNoOfvehicles() < 3 && alert.getPlacesAvailable() > 0) {
-//						log.info("Few vehicles to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
-						return true;
-					}
-				}					
+//				if(!stop.getAgencyId().equals(leg.getTransport().getAgencyId())) {
+//					if (alert.getNoOfvehicles() < 3 && alert.getNoOfvehicles() > 0) {
+////						log.info("Few vehicles to rent (" + alert.getNoOfvehicles() + ") @" + stop.getId());
+//						return true;
+//					}
+//				}					
 				
 //				if (alert.getPlacesAvailable() < 0) {
 //					return true;
@@ -214,7 +248,7 @@ public class AlertFilter {
 			}				
 		}
 		
-		return false;
+		return null;
 	}
 
 	private static boolean filterRecurrentParking(RecurrentJourney journey, AlertParking alert, AlertsSent alerts) {

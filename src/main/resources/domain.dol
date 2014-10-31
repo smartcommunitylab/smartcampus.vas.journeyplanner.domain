@@ -113,9 +113,10 @@ DomainType ItineraryObject implements UserAlertSender {
     }    
     
    action checkParking(alert:AlertParking) {
-		if (AlertFilter.filterParking(data, alert)) {
-			set data = AlertUpdater.updateAlerts(data,alert);
-			publish alertParking(alert, userId, clientId, name);		
+        newAlert: AlertParking = AlertFilter.filterParking(data, alert);
+		if (newAlert != null) {
+			set data = AlertUpdater.updateAlerts(data,newAlert);
+			publish alertParking(newAlert, userId, clientId, name);		
 		} 
     }      
 
