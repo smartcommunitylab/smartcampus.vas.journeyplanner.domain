@@ -205,12 +205,17 @@ public class AlertFilter {
 	}
 	
 	private static AlertParking filterParking(List<Leg> legs, AlertParking alert) {
+		Calendar ac = Calendar.getInstance();
+		ac.setTimeInMillis(alert.getFrom());
+
 		for (Leg leg: legs) {
 			StopId stop = leg.getFrom().getStopId();
 			if (stop == null) {
 				continue;
 			}
 
+			// exclude the notifications for past itineraries
+			if (leg.getEndtime()+1000*60*10 < ac.getTimeInMillis()) continue;
 			
 			if (areEqual(stop, alert.getPlace(), true, true)) {
 				System.err.println("FOUND FROM :" +stop.getId());

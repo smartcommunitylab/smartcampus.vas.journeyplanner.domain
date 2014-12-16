@@ -369,7 +369,7 @@ DomainObject GetStazioni {
     operation subscribeStazioni(user:String,password:String,code:String);
     
     action initialize() {
-               invoke subscribeStazioni("rovereto", "Rov14!", "5061");  
+               invoke subscribeStazioni("", "", "");  
 	}
 
 }
